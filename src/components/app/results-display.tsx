@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import type { ProcessedRow } from "@/lib/definitions";
 import Papa from "papaparse";
+import ResultsSummary from "./results-summary";
 
 interface ResultsDisplayProps {
   data: ProcessedRow[];
@@ -42,9 +43,10 @@ export default function ResultsDisplay({ data, onReset }: ResultsDisplayProps) {
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="map" className="w-full">
+      <Tabs defaultValue="summary" className="w-full">
         <div className="flex justify-between items-center mb-4">
           <TabsList>
+            <TabsTrigger value="summary">Summary</TabsTrigger>
             <TabsTrigger value="map">Map View</TabsTrigger>
             <TabsTrigger value="table">Data Table</TabsTrigger>
           </TabsList>
@@ -53,6 +55,9 @@ export default function ResultsDisplay({ data, onReset }: ResultsDisplayProps) {
             <Button variant="outline" onClick={() => handleExport("json")}><Download className="mr-2 h-4 w-4"/> Export JSON</Button>
           </div>
         </div>
+        <TabsContent value="summary">
+          <ResultsSummary data={data} />
+        </TabsContent>
         <TabsContent value="map">
           <MapView data={data} />
         </TabsContent>
