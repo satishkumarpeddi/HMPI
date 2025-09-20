@@ -32,7 +32,11 @@ export default function DataTable({ data }: DataTableProps) {
     (key) => !key.endsWith("_isImputed") && key !== "id"
   );
   
-  const displayHeaders = headers.map(h => {
+  // Make sure location is first
+  const sortedHeaders = ["location_name", ...headers.filter(h => h !== "location_name")];
+
+
+  const displayHeaders = sortedHeaders.map(h => {
       if(StandardFields[h as keyof typeof StandardFields]) return StandardFields[h as keyof typeof StandardFields];
       if(h === 'hmpi') return 'HMPI';
       if(h === 'pollutionLevel') return 'Pollution Level';
@@ -54,7 +58,7 @@ export default function DataTable({ data }: DataTableProps) {
             <TooltipProvider>
               {data.map((row) => (
                 <TableRow key={row.id}>
-                  {headers.map((header) => {
+                  {sortedHeaders.map((header) => {
                     const isImputed = row[`${header}_isImputed`];
                     const cellValue = row[header];
 
