@@ -2,7 +2,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
@@ -35,21 +35,13 @@ const getPollutionColor = (level: string) => {
     }
 };
 
-const ClientOnlyChart = ({ children }: { children: React.ReactNode }) => {
-  const [hasMounted, setHasMounted] = useState(false);
+export default function ResultsSummary({ data }: ResultsSummaryProps) {
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
+    setIsClient(true);
   }, []);
 
-  if (!hasMounted) {
-    return <Skeleton className="h-[250px] w-full" />;
-  }
-
-  return <>{children}</>;
-};
-
-export default function ResultsSummary({ data }: ResultsSummaryProps) {
   const summary = useMemo(() => {
     if (!data || data.length === 0) {
       return {
@@ -63,9 +55,9 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
 
     const hmpis = data.map((d) => parseFloat(d.hmpi)).filter((v) => !isNaN(v));
     const totalSamples = data.length;
-    const averageHmpi = hmpis.reduce((a, b) => a + b, 0) / hmpis.length;
-    const minHmpi = Math.min(...hmpis);
-    const maxHmpi = Math.max(...hmpis);
+    const averageHmpi = hmpis.length > 0 ? hmpis.reduce((a, b) => a + b, 0) / hmpis.length : 0;
+    const minHmpi = hmpis.length > 0 ? Math.min(...hmpis) : 0;
+    const maxHmpi = hmpis.length > 0 ? Math.max(...hmpis) : 0;
 
     const pollutionCounts = data.reduce(
       (acc, row) => {
@@ -88,9 +80,9 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
   }, [data]);
 
   const chartData = [
-    { level: "Low", count: summary.pollutionCounts.Low, fill: "var(--color-low)" },
-    { level: "Medium", count: summary.pollutionCounts.Medium, fill: "var(--color-medium)" },
-    { level: "High", count: summary.pollutionCounts.High, fill: "var(--color-high)" },
+    { level: "Low", count: summary.pollutionCounts.Low },
+    { level: "Medium", count: summary.pollutionCounts.Medium },
+    { level: "High", count: summary.pollutionCounts.High },
   ];
 
   const chartConfig = {
@@ -99,18 +91,6 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
     },
     hmpi: {
       label: "HMPI",
-    },
-    low: {
-      label: "Low",
-      color: "hsl(var(--chart-2))",
-    },
-    medium: {
-      label: "Medium",
-      color: "hsl(var(--chart-4))",
-    },
-    high: {
-      label: "High",
-      color: "hsl(var(--destructive))",
     },
   };
 
@@ -164,30 +144,32 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ClientOnlyChart>
-            <ChartContainer config={chartConfig} className="h-[250px] w-full">
-              <BarChart accessibilityLayer data={chartData} layout="vertical">
-                <CartesianGrid horizontal={false} />
-                <YAxis
-                  dataKey="level"
-                  type="category"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                />
-                <XAxis dataKey="count" type="number" hide />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Bar dataKey="count" radius={8} layout="vertical">
-                   {chartData.map((entry) => (
-                      <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </ClientOnlyChart>
+          <div className="h-[250px] w-full">
+            {!isClient ? <Skeleton className="h-full w-full" /> : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart accessibilityLayer data={chartData} layout="vertical">
+                  <CartesianGrid horizontal={false} />
+                  <YAxis
+                    dataKey="level"
+                    type="category"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                  />
+                  <XAxis dataKey="count" type="number" hide />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Bar dataKey="count" radius={8} layout="vertical">
+                     {chartData.map((entry) => (
+                        <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </CardContent>
       </Card>
       <Card className="md:col-span-2">
@@ -196,33 +178,35 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
             <CardDescription>Heavy Metal Pollution Index for each sample location.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ClientOnlyChart>
-            <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                <BarChart accessibilityLayer data={locationChartData}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis 
-                        dataKey="name"
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        interval={0}
-                    />
-                    <YAxis dataKey="hmpi" />
-                    <ChartTooltip 
-                        cursor={false}
-                        content={<ChartTooltipContent />} 
-                    />
-                    <Bar dataKey="hmpi" radius={8}>
-                        {locationChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
-                        ))}
-                    </Bar>
-                </BarChart>
-            </ChartContainer>
-          </ClientOnlyChart>
+            <div className="h-[250px] w-full">
+                {!isClient ? <Skeleton className="h-full w-full" /> : (
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart accessibilityLayer data={locationChartData}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis 
+                            dataKey="name"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                            interval={0}
+                        />
+                        <YAxis dataKey="hmpi" />
+                        <ChartTooltip 
+                            cursor={false}
+                            content={<ChartTooltipContent />} 
+                        />
+                        <Bar dataKey="hmpi" radius={8}>
+                            {locationChartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+                )}
+            </div>
         </CardContent>
       </Card>
     </div>
