@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProcessedRow, StandardFields } from "@/lib/definitions";
 import { Wand2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps {
   data: ProcessedRow[];
@@ -43,6 +44,19 @@ export default function DataTable({ data }: DataTableProps) {
       return h;
   });
 
+  const getPollutionLevelClass = (level: string) => {
+    switch (level) {
+      case "High":
+        return "bg-red-500/20 text-red-400";
+      case "Medium":
+        return "bg-orange-500/20 text-orange-400";
+      case "Low":
+        return "bg-green-500/20 text-green-400";
+      default:
+        return "";
+    }
+  };
+
   return (
     <Card>
       <ScrollArea className="h-[600px]">
@@ -62,22 +76,29 @@ export default function DataTable({ data }: DataTableProps) {
                     const isImputed = row[`${header}_isImputed`];
                     const cellValue = row[header];
 
+                    const isPollutionColumn = header === "pollutionLevel";
+                    const pollutionClass = isPollutionColumn
+                      ? getPollutionLevelClass(cellValue)
+                      : "";
+
                     return (
                       <TableCell key={header}>
-                        {isImputed ? (
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <span className="flex items-center gap-1.5 text-accent bg-accent/20 px-2 py-1 rounded-md">
-                                <Wand2 className="h-3 w-3"/> {cellValue}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Value imputed by AI</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <span>{cellValue}</span>
-                        )}
+                        <span className={cn(isPollutionColumn && 'px-2 py-1 rounded-md font-medium', pollutionClass)}>
+                          {isImputed ? (
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <span className={cn("flex items-center gap-1.5", isPollutionColumn ? 'text-inherit' : 'text-accent bg-accent/20 px-2 py-1 rounded-md')}>
+                                  <Wand2 className="h-3 w-3"/> {cellValue}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Value imputed by AI</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span>{cellValue}</span>
+                          )}
+                        </span>
                       </TableCell>
                     );
                   })}
