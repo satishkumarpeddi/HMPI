@@ -7,22 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import type { ProcessedRow } from "@/lib/definitions";
 import Papa from "papaparse";
-import dynamic from 'next/dynamic';
-import { Skeleton } from "@/components/ui/skeleton";
-
-const ResultsSummary = dynamic(() => import('./results-summary'), {
-  ssr: false,
-  loading: () => (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-80 md:col-span-2" />
-      <Skeleton className="h-80 md:col-span-2" />
-    </div>
-  ),
-});
+import ResultsSummary from './results-summary';
 
 
 interface ResultsDisplayProps {
