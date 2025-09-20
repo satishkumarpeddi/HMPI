@@ -200,7 +200,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                         />
                         <Bar dataKey="hmpi" radius={8}>
                             {locationChartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={getPollusionColor(entry.level)} />
+                                <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
                             ))}
                         </Bar>
                     </BarChart>
