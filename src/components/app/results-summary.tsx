@@ -189,6 +189,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                         angle={-45}
                         textAnchor="end"
                         height={60}
+                        interval={0}
                     />
                     <YAxis dataKey="hmpi" />
                     <ChartTooltip 
