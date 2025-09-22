@@ -1,3 +1,4 @@
+
 "use client";
 import { useState } from "react";
 import {
@@ -41,13 +42,16 @@ export default function MapView({ data }: MapViewProps) {
   if (!apiKey) {
     return (
       <Card className="h-[600px] flex items-center justify-center">
-        <CardContent className="text-center">
+        <CardContent className="text-center space-y-2">
           <p className="text-destructive font-semibold">
-            Google Maps API Key is missing.
+            Google Maps API Key is missing or invalid.
           </p>
           <p className="text-muted-foreground">
             Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment
             variables.
+          </p>
+          <p className="text-muted-foreground text-sm pt-2">
+            Note: You must also enable billing on your Google Cloud project for maps to display.
           </p>
         </CardContent>
       </Card>
