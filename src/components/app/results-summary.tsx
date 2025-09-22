@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, Tooltip, TooltipProps } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, Tooltip, TooltipProps, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
@@ -144,27 +144,29 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
         <CardContent>
           <div className="h-[250px] w-full">
             {!isClient ? <Skeleton className="h-full w-full" /> : (
-              <BarChart width={500} height={250} data={chartData} layout="vertical">
-                <CartesianGrid horizontal={false} />
-                <YAxis
-                  dataKey="level"
-                  type="category"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  stroke="hsl(var(--foreground))"
-                />
-                <XAxis dataKey="count" type="number" hide />
-                <Tooltip
-                  cursor={false}
-                  content={<CustomTooltip />}
-                />
-                <Bar dataKey="count" radius={8}>
-                   {chartData.map((entry) => (
-                      <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
-                  ))}
-                </Bar>
-              </BarChart>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="vertical">
+                  <CartesianGrid horizontal={false} />
+                  <YAxis
+                    dataKey="level"
+                    type="category"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    stroke="hsl(var(--foreground))"
+                  />
+                  <XAxis dataKey="count" type="number" hide />
+                  <Tooltip
+                    cursor={false}
+                    content={<CustomTooltip />}
+                  />
+                  <Bar dataKey="count" radius={8}>
+                     {chartData.map((entry) => (
+                        <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </div>
         </CardContent>
@@ -177,30 +179,32 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
         <CardContent>
             <div className="h-[250px] w-full">
                 {!isClient ? <Skeleton className="h-full w-full" /> : (
-                <BarChart width={500} height={250} data={locationChartData}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis 
-                        dataKey="name"
-                        tickLine={false}
-                        tickMargin={10}
-                        axisLine={false}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                        interval={0}
-                        stroke="hsl(var(--foreground))"
-                    />
-                    <YAxis dataKey="hmpi" stroke="hsl(var(--foreground))" />
-                    <Tooltip 
-                        cursor={false}
-                        content={<CustomTooltip />} 
-                    />
-                    <Bar dataKey="hmpi" radius={8}>
-                        {locationChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
-                        ))}
-                    </Bar>
-                </BarChart>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={locationChartData}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis 
+                            dataKey="name"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                            angle={-45}
+                            textAnchor="end"
+                            height={60}
+                            interval={0}
+                            stroke="hsl(var(--foreground))"
+                        />
+                        <YAxis dataKey="hmpi" stroke="hsl(var(--foreground))" />
+                        <Tooltip 
+                            cursor={false}
+                            content={<CustomTooltip />} 
+                        />
+                        <Bar dataKey="hmpi" radius={8}>
+                            {locationChartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 )}
             </div>
         </CardContent>
