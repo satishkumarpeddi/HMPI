@@ -187,11 +187,12 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                             tickLine={false}
                             tickMargin={10}
                             axisLine={false}
+                            stroke="hsl(var(--foreground))"
+                            interval={0}
                             angle={-45}
                             textAnchor="end"
-                            height={60}
-                            interval={0}
-                            stroke="hsl(var(--foreground))"
+                            height={80}
+                            style={{ fontSize: '12px' }}
                         />
                         <YAxis dataKey="hmpi" stroke="hsl(var(--foreground))" />
                         <Tooltip 
