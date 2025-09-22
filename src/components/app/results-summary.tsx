@@ -24,15 +24,7 @@ interface ResultsSummaryProps {
 }
 
 const getPollutionColor = (level: string) => {
-    switch (level) {
-        case "High":
-            return "hsl(var(--destructive))";
-        case "Medium":
-            return "hsl(var(--chart-4))";
-        case "Low":
-        default:
-            return "hsl(var(--chart-2))";
-    }
+    return "#FFFFFF";
 };
 
 export default function ResultsSummary({ data }: ResultsSummaryProps) {
@@ -146,28 +138,26 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
         <CardContent>
           <div className="h-[250px] w-full">
             {!isClient ? <Skeleton className="h-full w-full" /> : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart accessibilityLayer data={chartData} layout="vertical">
-                  <CartesianGrid horizontal={false} />
-                  <YAxis
-                    dataKey="level"
-                    type="category"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <XAxis dataKey="count" type="number" hide />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Bar dataKey="count" radius={8} layout="vertical">
-                     {chartData.map((entry) => (
-                        <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChart accessibilityLayer width={500} height={250} data={chartData} layout="vertical">
+                <CartesianGrid horizontal={false} />
+                <YAxis
+                  dataKey="level"
+                  type="category"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <XAxis dataKey="count" type="number" hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="count" radius={8} layout="vertical">
+                   {chartData.map((entry) => (
+                      <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
+                  ))}
+                </Bar>
+              </BarChart>
             )}
           </div>
         </CardContent>
@@ -180,31 +170,29 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
         <CardContent>
             <div className="h-[250px] w-full">
                 {!isClient ? <Skeleton className="h-full w-full" /> : (
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart accessibilityLayer data={locationChartData}>
-                        <CartesianGrid vertical={false} />
-                        <XAxis 
-                            dataKey="name"
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                            angle={-45}
-                            textAnchor="end"
-                            height={60}
-                            interval={0}
-                        />
-                        <YAxis dataKey="hmpi" />
-                        <ChartTooltip 
-                            cursor={false}
-                            content={<ChartTooltipContent />} 
-                        />
-                        <Bar dataKey="hmpi" radius={8}>
-                            {locationChartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+                <BarChart accessibilityLayer width={500} height={250} data={locationChartData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis 
+                        dataKey="name"
+                        tickLine={false}
+                        tickMargin={10}
+                        axisLine={false}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                        interval={0}
+                    />
+                    <YAxis dataKey="hmpi" />
+                    <ChartTooltip 
+                        cursor={false}
+                        content={<ChartTooltipContent />} 
+                    />
+                    <Bar dataKey="hmpi" radius={8}>
+                        {locationChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
+                        ))}
+                    </Bar>
+                </BarChart>
                 )}
             </div>
         </CardContent>
