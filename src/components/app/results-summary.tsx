@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -138,7 +137,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
         <CardContent>
           <div className="h-[250px] w-full">
             {!isClient ? <Skeleton className="h-full w-full" /> : (
-              <BarChart accessibilityLayer width={500} height={250} data={chartData} layout="vertical">
+              <BarChart width={500} height={250} data={chartData} layout="vertical">
                 <CartesianGrid horizontal={false} />
                 <YAxis
                   dataKey="level"
@@ -170,7 +169,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
         <CardContent>
             <div className="h-[250px] w-full">
                 {!isClient ? <Skeleton className="h-full w-full" /> : (
-                <BarChart accessibilityLayer width={500} height={250} data={locationChartData}>
+                <BarChart width={500} height={250} data={locationChartData}>
                     <CartesianGrid vertical={false} />
                     <XAxis 
                         dataKey="name"
