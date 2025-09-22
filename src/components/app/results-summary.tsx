@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell, Tooltip, TooltipProps } from "recharts";
 import {
   Card,
   CardContent,
@@ -9,13 +9,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { ProcessedRow } from "@/lib/definitions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 
 interface ResultsSummaryProps {
@@ -23,8 +19,28 @@ interface ResultsSummaryProps {
 }
 
 const getPollutionColor = (level: string) => {
-    return "#FFFFFF";
+    if (level === 'High') return 'hsl(var(--destructive))';
+    if (level === 'Medium') return 'hsl(var(--primary))';
+    return 'hsl(var(--chart-2))';
 };
+
+const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col space-y-1">
+            <span className="text-muted-foreground text-sm">{payload[0].name}</span>
+            <span className="font-bold">{payload[0].value}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 
 export default function ResultsSummary({ data }: ResultsSummaryProps) {
   const [isClient, setIsClient] = useState(false);
@@ -75,15 +91,6 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
     { level: "Medium", count: summary.pollutionCounts.Medium },
     { level: "High", count: summary.pollutionCounts.High },
   ];
-
-  const chartConfig = {
-    count: {
-      label: "Samples",
-    },
-    hmpi: {
-      label: "HMPI",
-    },
-  };
 
   const locationChartData = useMemo(() => {
     return data.map(row => ({
@@ -145,11 +152,12 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
+                  stroke="hsl(var(--foreground))"
                 />
                 <XAxis dataKey="count" type="number" hide />
-                <ChartTooltip
+                <Tooltip
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
+                  content={<CustomTooltip />}
                 />
                 <Bar dataKey="count" radius={8}>
                    {chartData.map((entry) => (
@@ -180,11 +188,12 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                         textAnchor="end"
                         height={60}
                         interval={0}
+                        stroke="hsl(var(--foreground))"
                     />
-                    <YAxis dataKey="hmpi" />
-                    <ChartTooltip 
+                    <YAxis dataKey="hmpi" stroke="hsl(var(--foreground))" />
+                    <Tooltip 
                         cursor={false}
-                        content={<ChartTooltipContent />} 
+                        content={<CustomTooltip />} 
                     />
                     <Bar dataKey="hmpi" radius={8}>
                         {locationChartData.map((entry, index) => (
