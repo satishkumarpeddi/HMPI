@@ -30,7 +30,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-2 gap-2">
           <div className="flex flex-col space-y-1">
-            <span className="text-muted-foreground text-sm">{payload[0].name}</span>
+            <span className="text-muted-foreground text-sm">{payload[0].name === 'count' ? label : payload[0].name}</span>
             <span className="font-bold">{payload[0].value}</span>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                             cursor={false}
                             content={<CustomTooltip />} 
                         />
-                        <Bar dataKey="hmpi" radius={8}>
+                        <Bar dataKey="hmpi" name="HMPI" radius={8}>
                             {locationChartData.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={getPollutionColor(entry.level)} />
                             ))}
