@@ -152,7 +152,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar dataKey="count" radius={8} layout="vertical">
+                <Bar dataKey="count" radius={8}>
                    {chartData.map((entry) => (
                       <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
                   ))}
