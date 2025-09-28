@@ -9,14 +9,16 @@ import type { CsvData, CsvHeader } from "@/lib/definitions";
 
 interface CsvUploaderProps {
   onUpload: (data: CsvData, headers: CsvHeader) => void;
+  disabled?: boolean;
 }
 
-export default function CsvUploader({ onUpload }: CsvUploaderProps) {
+export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFile = (file: File) => {
+    if (disabled) return;
     if (file && file.type === "text/csv") {
       setFileName(file.name);
       Papa.parse(file, {
@@ -53,8 +55,9 @@ export default function CsvUploader({ onUpload }: CsvUploaderProps) {
   const handleDragEnter = useCallback((e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (disabled) return;
     setIsDragging(true);
-  }, []);
+  }, [disabled]);
 
   const handleDragLeave = useCallback((e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
@@ -72,11 +75,12 @@ export default function CsvUploader({ onUpload }: CsvUploaderProps) {
       e.preventDefault();
       e.stopPropagation();
       setIsDragging(false);
+      if (disabled) return;
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         handleFile(e.dataTransfer.files[0]);
       }
     },
-    [handleFile]
+    [handleFile, disabled]
   );
 
   return (
@@ -86,9 +90,9 @@ export default function CsvUploader({ onUpload }: CsvUploaderProps) {
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+        className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-colors ${
           isDragging ? "border-primary bg-primary/10" : "border-border"
-        }`}
+        } ${disabled ? 'cursor-not-allowed bg-muted/50' : 'cursor-pointer'}`}
       >
         <UploadCloud className="h-12 w-12 text-muted-foreground" />
         <p className="mt-4 text-center text-muted-foreground">
@@ -101,10 +105,11 @@ export default function CsvUploader({ onUpload }: CsvUploaderProps) {
           accept=".csv"
           className="hidden"
           onChange={handleFileChange}
+          disabled={disabled}
         />
       </label>
       {fileName && <p className="text-sm text-muted-foreground">File: {fileName}</p>}
-      <Button onClick={() => document.getElementById('csv-upload')?.click()} variant="outline">
+      <Button onClick={() => document.getElementById('csv-upload')?.click()} variant="outline" disabled={disabled}>
         Select File
       </Button>
     </div>
