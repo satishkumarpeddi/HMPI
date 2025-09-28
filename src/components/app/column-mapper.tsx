@@ -29,7 +29,9 @@ export default function ColumnMapper({ headers, onProcess, onCancel, suggestedMa
   }, [suggestedMapping]);
 
   const handleMappingChange = (field: StandardField, value: string) => {
-    setMapping((prev) => ({ ...prev, [field]: value }));
+    // Treat the placeholder value as an empty selection
+    const finalValue = value === "__placeholder__" ? "" : value;
+    setMapping((prev) => ({ ...prev, [field]: finalValue }));
   };
   
   const isProcessable = mapping.latitude && mapping.longitude;
@@ -57,14 +59,14 @@ export default function ColumnMapper({ headers, onProcess, onCancel, suggestedMa
                 {(field === 'latitude' || field === 'longitude') && <span className="text-destructive">*</span>}
             </Label>
             <Select 
-              value={mapping[field] || ""}
+              value={mapping[field] || "__placeholder__"}
               onValueChange={(value) => handleMappingChange(field, value)}
             >
               <SelectTrigger id={`select-${field}`}>
                 <SelectValue placeholder="Select CSV column..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="" disabled>Select CSV column...</SelectItem>
+                <SelectItem value="__placeholder__" disabled>Select CSV column...</SelectItem>
                 {headers.map((header) => (
                   <SelectItem key={header} value={header}>
                     {header}
