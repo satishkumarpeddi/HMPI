@@ -23,8 +23,20 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
       setFileName(file.name);
       Papa.parse(file, {
         complete: (results) => {
-          const headers = results.data[0] as CsvHeader;
           const data = results.data as CsvData;
+          if (data.length === 0) {
+            toast({
+              variant: "destructive",
+              title: "Empty CSV File",
+              description: "The uploaded file is empty or could not be parsed.",
+            });
+            setFileName(null);
+            return;
+          }
+          
+          const headers = (data[0] as CsvHeader).map(h => h.toLowerCase());
+          data[0] = headers; // Replace original headers with lowercase versions
+
           onUpload(data, headers);
         },
         error: (error) => {
