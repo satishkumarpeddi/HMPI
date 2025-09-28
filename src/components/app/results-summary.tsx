@@ -26,13 +26,19 @@ const getPollutionColor = (level: string) => {
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
   if (active && payload && payload.length) {
+    const isLocationChart = payload[0].name === 'HMPI';
+    const name = isLocationChart ? label : payload[0].name;
+    const value = isLocationChart ? payload[0].value : payload[1] ? payload[1].value : payload[0].value;
+    const title = isLocationChart ? 'HMPI' : label;
+
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col space-y-1">
-            <span className="text-muted-foreground text-sm">{payload[0].name === 'count' ? label : payload[0].name}</span>
-            <span className="font-bold">{payload[0].value}</span>
-          </div>
+        <div className="flex flex-col space-y-1">
+            <span className="text-muted-foreground text-sm font-bold">{title}</span>
+            <div className="grid grid-cols-2 gap-x-2">
+                <span className="text-muted-foreground text-sm">{name}</span>
+                <span className="font-bold text-right">{value}</span>
+            </div>
         </div>
       </div>
     );
@@ -160,7 +166,7 @@ export default function ResultsSummary({ data }: ResultsSummaryProps) {
                     cursor={false}
                     content={<CustomTooltip />}
                   />
-                  <Bar dataKey="count" radius={8}>
+                  <Bar dataKey="count" name="Level" radius={8}>
                      {chartData.map((entry) => (
                         <Cell key={`cell-${entry.level}`} fill={getPollutionColor(entry.level)} />
                     ))}
