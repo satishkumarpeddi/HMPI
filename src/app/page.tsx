@@ -7,7 +7,7 @@ import ColumnMapper from "@/components/app/column-mapper";
 import ResultsDisplay from "@/components/app/results-display";
 import { Logo } from "@/components/app/logo";
 import { Button } from "@/components/ui/button";
-import { processDataWithAI, processDataWithoutAI } from "@/app/actions";
+import { processDataWithAI, processDataWithoutAI, getSuggestedMapping } from "@/app/actions";
 import type {
   CsvData,
   CsvHeader,
@@ -23,16 +23,33 @@ export default function Home() {
   const [step, setStep] = useState<Step>("upload");
   const [csvData, setCsvData] = useState<CsvData | null>(null);
   const [csvHeaders, setCsvHeaders] = useState<CsvHeader | null>(null);
+  const [suggestedMapping, setSuggestedMapping] = useState<ColumnMapping | null>(null);
   const [processedData, setProcessedData] = useState<ProcessedRow[] | null>(
     null
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoadingMapping, setIsLoadingMapping] = useState(false);
   const { toast } = useToast();
 
-  const handleUpload = (data: CsvData, headers: CsvHeader) => {
+  const handleUpload = async (data: CsvData, headers: CsvHeader) => {
+    setIsLoadingMapping(true);
     setCsvData(data);
     setCsvHeaders(headers);
     setStep("mapColumns");
+
+    try {
+      const mapping = await getSuggestedMapping(headers);
+      setSuggestedMapping(mapping);
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "AI Mapping Failed",
+        description: "Could not automatically suggest column mappings. Please map them manually.",
+      });
+      setSuggestedMapping({}); // Set to empty to allow manual mapping
+    } finally {
+      setIsLoadingMapping(false);
+    }
   };
 
   const handleProcess = async (mapping: ColumnMapping, useAi: boolean) => {
@@ -74,7 +91,9 @@ export default function Home() {
     setCsvData(null);
     setCsvHeaders(null);
     setProcessedData(null);
+    setSuggestedMapping(null);
     setIsProcessing(false);
+    setIsLoadingMapping(false);
   };
 
   const renderStep = () => {
@@ -97,7 +116,15 @@ export default function Home() {
           </div>
         );
       case "mapColumns":
-        return csvHeaders && <ColumnMapper headers={csvHeaders} onProcess={handleProcess} onCancel={handleReset} />;
+        return csvHeaders && (
+          <ColumnMapper 
+            headers={csvHeaders} 
+            onProcess={handleProcess} 
+            onCancel={handleReset}
+            suggestedMapping={suggestedMapping}
+            isLoading={isLoadingMapping}
+          />
+        );
       case "results":
         if (isProcessing) {
           return (

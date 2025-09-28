@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,17 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import type { CsvHeader, ColumnMapping, StandardField } from "@/lib/definitions";
 import { StandardFields } from "@/lib/definitions";
-import { Wand2 } from "lucide-react";
+import { Wand2, Loader2 } from "lucide-react";
 
 interface ColumnMapperProps {
   headers: CsvHeader;
   onProcess: (mapping: ColumnMapping, useAi: boolean) => void;
   onCancel: () => void;
+  suggestedMapping: ColumnMapping | null;
+  isLoading: boolean;
 }
 
-export default function ColumnMapper({ headers, onProcess, onCancel }: ColumnMapperProps) {
+export default function ColumnMapper({ headers, onProcess, onCancel, suggestedMapping, isLoading }: ColumnMapperProps) {
   const [mapping, setMapping] = useState<ColumnMapping>({});
   const [useAi, setUseAi] = useState(false);
+
+  useEffect(() => {
+    if (suggestedMapping) {
+      setMapping(suggestedMapping);
+    }
+  }, [suggestedMapping]);
 
   const handleMappingChange = (field: StandardField, value: string) => {
     setMapping((prev) => ({ ...prev, [field]: value }));
@@ -32,21 +40,31 @@ export default function ColumnMapper({ headers, onProcess, onCancel }: ColumnMap
         <CardTitle>Map Your Data Columns</CardTitle>
         <CardDescription>
           Match the columns from your CSV file to the required fields for analysis.
-          Latitude and Longitude are required for map visualization.
+          Latitude and Longitude are required for map visualization. We've suggested mappings using AI.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
+        {isLoading && (
+            <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-lg">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="mt-2 text-muted-foreground">Suggesting mappings...</p>
+            </div>
+        )}
         {(Object.keys(StandardFields) as StandardField[]).map((field) => (
           <div key={field} className="space-y-2">
             <Label htmlFor={`select-${field}`}>
                 {StandardFields[field]}
                 {(field === 'latitude' || field === 'longitude') && <span className="text-destructive">*</span>}
             </Label>
-            <Select onValueChange={(value) => handleMappingChange(field, value)}>
+            <Select 
+              value={mapping[field] || ""}
+              onValueChange={(value) => handleMappingChange(field, value)}
+            >
               <SelectTrigger id={`select-${field}`}>
                 <SelectValue placeholder="Select CSV column..." />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="" disabled>Select CSV column...</SelectItem>
                 {headers.map((header) => (
                   <SelectItem key={header} value={header}>
                     {header}
@@ -71,7 +89,7 @@ export default function ColumnMapper({ headers, onProcess, onCancel }: ColumnMap
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
         <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={() => onProcess(mapping, useAi)} disabled={!isProcessable}>
+        <Button onClick={() => onProcess(mapping, useAi)} disabled={!isProcessable || isLoading}>
           Analyze Data
         </Button>
       </CardFooter>

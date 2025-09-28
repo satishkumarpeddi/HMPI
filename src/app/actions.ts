@@ -1,6 +1,7 @@
 "use server";
 
 import { imputeMissingHeavyMetalValues } from "@/ai/flows/impute-missing-heavy-metal-values";
+import { suggestColumnMapping } from "@/ai/flows/suggest-column-mapping";
 import {
   arrayToCsv,
   parseImputedCsv,
@@ -10,6 +11,7 @@ import {
 import {
   ColumnMapping,
   CsvData,
+  CsvHeader,
   ProcessedRow,
 } from "@/lib/definitions";
 
@@ -71,5 +73,18 @@ export async function processDataWithoutAI(
       error:
         error instanceof Error ? error.message : "An unknown error occurred during data processing.",
     };
+  }
+}
+
+export async function getSuggestedMapping(
+  headers: CsvHeader
+): Promise<ColumnMapping> {
+  try {
+    const result = await suggestColumnMapping({ headers });
+    return result;
+  } catch (error) {
+    console.error("Error suggesting column mapping:", error);
+    // Return empty mapping on error, user will have to map manually
+    return {};
   }
 }
