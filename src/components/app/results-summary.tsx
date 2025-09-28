@@ -21,7 +21,7 @@ interface ResultsSummaryProps {
 const getPollutionColor = (level: string) => {
     if (level === 'High') return 'hsl(var(--destructive))';
     if (level === 'Medium') return 'hsl(var(--primary))';
-    return 'hsl(var(--chart-2))';
+    return '#22c55e'; // green-500
 };
 
 const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
