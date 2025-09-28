@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import CsvUploader from "@/components/app/csv-uploader";
 import ResultsDisplay from "@/components/app/results-display";
+import ManualMapper from "@/components/app/manual-mapper";
 import { Logo } from "@/components/app/logo";
 import { Button } from "@/components/ui/button";
 import { processDataWithAI, processDataWithoutAI, getSuggestedMapping } from "@/app/actions";
@@ -18,7 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-type Step = "upload" | "results";
+type Step = "upload" | "manual_map" | "results";
 
 export default function Home() {
   const [step, setStep] = useState<Step>("upload");
@@ -27,33 +28,65 @@ export default function Home() {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [useAiImputation, setUseAiImputation] = useState(false);
+  const [csvData, setCsvData] = useState<{data: CsvData, headers: CsvHeader} | null>(null);
+  const [suggestedMapping, setSuggestedMapping] = useState<ColumnMapping | null>(null);
   const { toast } = useToast();
 
   const handleUpload = async (data: CsvData, headers: CsvHeader) => {
     setIsProcessing(true);
-    setStep("results");
     
     try {
-      const suggestedMapping = await getSuggestedMapping(headers);
+      const mapping = await getSuggestedMapping(headers);
 
-      if (!suggestedMapping.latitude || !suggestedMapping.longitude) {
-        throw new Error("Could not automatically determine Latitude and Longitude columns. Please ensure your CSV has clear headers like 'latitude' and 'longitude'.");
-      }
-
-      let result;
-      if (useAiImputation) {
-        result = await processDataWithAI(data, suggestedMapping);
+      if (!mapping.latitude || !mapping.longitude) {
+        // If lat/lon are not found, go to manual mapping step
+        setCsvData({data, headers});
+        setSuggestedMapping(mapping);
+        setStep("manual_map");
+        setIsProcessing(false);
       } else {
-        result = await processDataWithoutAI(data, suggestedMapping);
+        // If found, proceed directly to analysis
+        setStep("results");
+        await processAndShowResults(data, mapping);
       }
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      
-      setProcessedData(result.data || []);
     } catch (error) {
-      console.error("Processing failed:", error);
+      handleProcessingError(error);
+    }
+  };
+
+  const processAndShowResults = async (data: CsvData, mapping: ColumnMapping) => {
+    setIsProcessing(true);
+    setStep("results");
+     try {
+        let result;
+        if (useAiImputation) {
+            result = await processDataWithAI(data, mapping);
+        } else {
+            result = await processDataWithoutAI(data, mapping);
+        }
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        setProcessedData(result.data || []);
+     } catch (error) {
+        handleProcessingError(error);
+     } finally {
+        setIsProcessing(false);
+     }
+  }
+  
+  const handleManualMap = async (manualMapping: {latitude: string, longitude: string}) => {
+      if (csvData && suggestedMapping) {
+        const finalMapping = { ...suggestedMapping, ...manualMapping };
+        await processAndShowResults(csvData.data, finalMapping);
+      }
+  }
+
+  const handleProcessingError = (error: unknown) => {
+     console.error("Processing failed:", error);
       toast({
         variant: "destructive",
         title: "Processing Failed",
@@ -63,15 +96,14 @@ export default function Home() {
             : "An unknown error occurred.",
       });
       handleReset(); // Go back to upload screen on error
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  }
 
   const handleReset = () => {
     setStep("upload");
     setProcessedData(null);
     setIsProcessing(false);
+    setCsvData(null);
+    setSuggestedMapping(null);
   };
 
   const renderStep = () => {
@@ -104,6 +136,13 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+        );
+      case "manual_map":
+        return csvData && (
+            <ManualMapper 
+                headers={csvData.headers}
+                onSubmit={handleManualMap}
+            />
         );
       case "results":
         if (isProcessing) {
