@@ -34,10 +34,15 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
             return;
           }
           
-          const headers = (data[0] as CsvHeader).map(h => h.toLowerCase());
-          data[0] = headers; // Replace original headers with lowercase versions
+          const lowercasedData = data.map(row => 
+            row.map(cell => 
+              typeof cell === 'string' ? cell.toLowerCase() : cell
+            )
+          ) as CsvData;
 
-          onUpload(data, headers);
+          const headers = lowercasedData[0] as CsvHeader;
+
+          onUpload(lowercasedData, headers);
         },
         error: (error) => {
           toast({
