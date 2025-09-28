@@ -39,11 +39,14 @@ export default function Home() {
       const mapping = await getSuggestedMapping(headers);
 
       if (!mapping.latitude || !mapping.longitude) {
-        // If lat/lon are not found, go to manual mapping step
-        setCsvData({data, headers});
-        setSuggestedMapping(mapping);
-        setStep("manual_map");
+        toast({
+            variant: "destructive",
+            title: "Automatic Mapping Failed",
+            description: "Could not find 'latitude' and 'longitude' columns. Please ensure your CSV headers are clear and try uploading again.",
+        });
         setIsProcessing(false);
+        setStep('upload');
+        return;
       } else {
         // If found, proceed directly to analysis
         setStep("results");
