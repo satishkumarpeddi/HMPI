@@ -8,36 +8,30 @@ import {
   Pin,
   InfoWindow,
 } from "@vis.gl/react-google-maps";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ProcessedRow, StandardFields } from "@/lib/definitions";
 
 interface MapViewProps {
   data: ProcessedRow[];
 }
 
-/** Returns color based on pollution level */
+/** Returns color based on pollution level using Tailwind config colors */
 const getMarkerColor = (level: string) => {
   switch (level) {
     case "High":
-      return "#ef4444"; // red-500
+      return "#e53e3e"; // destructive.DEFAULT
     case "Medium":
-      return "#f97316"; // orange-500
+      return "#f6e05e"; // accent.DEFAULT
     case "Low":
     default:
-      return "#22c55e"; // green-500
+      return "#4fd1c5"; // secondary.DEFAULT
   }
 };
 
-/**
- * MapView component
- * Displays processed groundwater data on a Google Map with markers.
- * Active marker shows detailed information in an InfoWindow.
- */
 export default function MapView({ data }: MapViewProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [activeMarker, setActiveMarker] = useState<ProcessedRow | null>(null);
 
-  // Filter valid rows with valid latitude and longitude
   const validData = data.filter(
     (d) =>
       d.latitude != null &&
@@ -46,7 +40,6 @@ export default function MapView({ data }: MapViewProps) {
       !isNaN(parseFloat(d.longitude))
   );
 
-  // Handle missing API key
   if (!apiKey) {
     return (
       <Card className="h-[600px] flex items-center justify-center">
@@ -67,14 +60,13 @@ export default function MapView({ data }: MapViewProps) {
     );
   }
 
-  // Default map center
   const center =
     validData.length > 0
       ? {
           lat: parseFloat(validData[0].latitude),
           lng: parseFloat(validData[0].longitude),
         }
-      : { lat: 40.7128, lng: -74.006 }; // fallback to New York
+      : { lat: 40.7128, lng: -74.006 };
 
   return (
     <Card>
@@ -86,7 +78,6 @@ export default function MapView({ data }: MapViewProps) {
             mapId="a3a7c3a4c5d6c6e6"
             gestureHandling="greedy"
           >
-            {/* Markers */}
             {validData.map((markerData) => (
               <AdvancedMarker
                 key={markerData.id}
@@ -104,7 +95,6 @@ export default function MapView({ data }: MapViewProps) {
               </AdvancedMarker>
             ))}
 
-            {/* InfoWindow for selected marker */}
             {activeMarker && (
               <InfoWindow
                 position={{
@@ -133,7 +123,6 @@ export default function MapView({ data }: MapViewProps) {
                   </p>
                   <hr className="my-2" />
                   <div className="text-xs space-y-1">
-                    {/* Display additional fields excluding location and coordinates */}
                     {Object.keys(StandardFields).map((field) => {
                       if (
                         field.startsWith("location") ||
