@@ -34,22 +34,18 @@ export default function Home() {
 
   const handleUpload = async (data: CsvData, headers: CsvHeader) => {
     setIsProcessing(true);
+    setCsvData({ data, headers });
     
     try {
       const mapping = await getSuggestedMapping(headers);
+      setSuggestedMapping(mapping);
 
       if (!mapping.latitude || !mapping.longitude) {
-        toast({
-            variant: "destructive",
-            title: "Automatic Mapping Failed",
-            description: "Could not find 'latitude' and 'longitude' columns. Please ensure your CSV headers are clear and try uploading again.",
-        });
+        // If mapping fails, go to manual mapping screen
+        setStep("manual_map");
         setIsProcessing(false);
-        setStep('upload');
-        return;
       } else {
         // If found, proceed directly to analysis
-        setStep("results");
         await processAndShowResults(data, mapping);
       }
 
