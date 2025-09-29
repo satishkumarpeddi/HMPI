@@ -1,76 +1,78 @@
-'use server';
+"use server";
+
 /**
- * @fileOverview An AI agent for imputing missing heavy metal concentration values in groundwater data.
- *
- * - imputeMissingHeavyMetalValues - A function that imputes missing values in heavy metal concentration data.
- * - ImputeMissingHeavyMetalValuesInput - The input type for the imputeMissingHeavyMetalValues function.
- * - ImputeMissingHeavyMetalValuesOutput - The return type for the imputeMissingHeavyMetalValues function.
+ * AI agent for imputing missing heavy metal concentration values in groundwater data.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
+// Input schema for imputation
 const ImputeMissingHeavyMetalValuesInputSchema = z.object({
   data: z
     .string()
     .describe(
-      'A CSV string containing groundwater heavy metal concentration data. The data should include location, depth, neighboring sample values, and heavy metal concentrations, with missing values represented as empty strings.'
+      "CSV string of groundwater heavy metal concentration data including location, depth, neighboring sample values, and heavy metal concentrations. Missing values are empty strings."
     ),
   locationContext: z
     .string()
     .optional()
     .describe(
-      'Additional information about the location of the groundwater samples, which may help in the imputation process. This is optional and can provide useful context to the AI model.'
+      "Optional additional information about the groundwater sample locations to aid imputation."
     ),
 });
 export type ImputeMissingHeavyMetalValuesInput = z.infer<
   typeof ImputeMissingHeavyMetalValuesInputSchema
 >;
 
+// Output schema for imputation
 const ImputeMissingHeavyMetalValuesOutputSchema = z.object({
   imputedData: z
     .string()
     .describe(
-      'A CSV string containing the imputed groundwater heavy metal concentration data. The missing values have been replaced with AI-imputed values. An audit trail is included, clearly marking all imputed values.'
+      "CSV string with imputed groundwater heavy metal concentration data. Includes an audit trail marking all AI-imputed values."
     ),
 });
 export type ImputeMissingHeavyMetalValuesOutput = z.infer<
   typeof ImputeMissingHeavyMetalValuesOutputSchema
 >;
 
+// Main function to impute missing values
 export async function imputeMissingHeavyMetalValues(
   input: ImputeMissingHeavyMetalValuesInput
 ): Promise<ImputeMissingHeavyMetalValuesOutput> {
   return imputeMissingHeavyMetalValuesFlow(input);
 }
 
+// Prompt definition for AI model
 const imputeMissingHeavyMetalValuesPrompt = ai.definePrompt({
-  name: 'imputeMissingHeavyMetalValuesPrompt',
-  input: {schema: ImputeMissingHeavyMetalValuesInputSchema},
-  output: {schema: ImputeMissingHeavyMetalValuesOutputSchema},
-  prompt: `You are an expert in groundwater heavy metal concentration data analysis. You are tasked with imputing missing values in a dataset.
+  name: "imputeMissingHeavyMetalValuesPrompt",
+  input: { schema: ImputeMissingHeavyMetalValuesInputSchema },
+  output: { schema: ImputeMissingHeavyMetalValuesOutputSchema },
+  prompt: `You are an expert in groundwater heavy metal concentration data analysis tasked with imputing missing values.
 
-  Instructions:
-  1.  Receive a CSV string containing groundwater heavy metal concentration data. The data includes location, depth, neighboring sample values, and heavy metal concentrations. Missing values are represented as empty strings.
-  2.  Analyze the data, considering the location, depth, and neighboring sample values to impute reasonable values for the missing data.
-  3.  Generate an audit trail that clearly indicates which values have been imputed by the AI.
-  4.  Return a CSV string containing the imputed groundwater heavy metal concentration data. The missing values have been replaced with AI-imputed values. An audit trail is included, clearly marking all imputed values.
+Instructions:
+1. Receive a CSV string of groundwater heavy metal concentration data. Missing values are empty strings.
+2. Analyze location, depth, and neighboring sample values to impute reasonable values.
+3. Generate an audit trail marking all AI-imputed values.
+4. Return a CSV string with the imputed data.
 
-  The location context is: {{{locationContext}}}
+Location context: {{{locationContext}}}
 
-  Here is the data:
-  {{{data}}}
-  `,
+Data:
+{{{data}}}
+`,
 });
 
+// Flow definition for executing the AI prompt
 const imputeMissingHeavyMetalValuesFlow = ai.defineFlow(
   {
-    name: 'imputeMissingHeavyMetalValuesFlow',
+    name: "imputeMissingHeavyMetalValuesFlow",
     inputSchema: ImputeMissingHeavyMetalValuesInputSchema,
     outputSchema: ImputeMissingHeavyMetalValuesOutputSchema,
   },
-  async input => {
-    const {output} = await imputeMissingHeavyMetalValuesPrompt(input);
+  async (input) => {
+    const { output } = await imputeMissingHeavyMetalValuesPrompt(input);
     return output!;
   }
 );

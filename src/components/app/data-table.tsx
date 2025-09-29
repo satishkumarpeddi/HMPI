@@ -29,21 +29,28 @@ export default function DataTable({ data }: DataTableProps) {
     return <p>No data to display.</p>;
   }
 
+  // Extract column headers (exclude "_isImputed" and "id")
   const headers = Object.keys(data[0]).filter(
     (key) => !key.endsWith("_isImputed") && key !== "id"
   );
-  
-  // Make sure location is first
-  const sortedHeaders = ["location_name", ...headers.filter(h => h !== "location_name")];
 
+  // Ensure location column comes first
+  const sortedHeaders = [
+    "location_name",
+    ...headers.filter((h) => h !== "location_name"),
+  ];
 
-  const displayHeaders = sortedHeaders.map(h => {
-      if(StandardFields[h as keyof typeof StandardFields]) return StandardFields[h as keyof typeof StandardFields];
-      if(h === 'hmpi') return 'HMPI';
-      if(h === 'pollutionLevel') return 'Pollution Level';
-      return h;
+  // Map headers to user-friendly display names
+  const displayHeaders = sortedHeaders.map((h) => {
+    if (StandardFields[h as keyof typeof StandardFields]) {
+      return StandardFields[h as keyof typeof StandardFields];
+    }
+    if (h === "hmpi") return "HMPI";
+    if (h === "pollutionLevel") return "Pollution Level";
+    return h;
   });
 
+  /** Assign color classes based on pollution level */
   const getPollutionLevelClass = (level: string) => {
     switch (level) {
       case "High":
@@ -68,14 +75,16 @@ export default function DataTable({ data }: DataTableProps) {
               ))}
             </TableRow>
           </TableHeader>
+
           <TableBody>
             <TooltipProvider>
               {data.map((row) => (
                 <TableRow key={row.id}>
                   {sortedHeaders.map((header) => {
-                    const isImputed = row[`${header}_isImputed`];
                     const cellValue = row[header];
+                    const isImputed = row[`${header}_isImputed`];
 
+                    // Apply special styling for pollution level column
                     const isPollutionColumn = header === "pollutionLevel";
                     const pollutionClass = isPollutionColumn
                       ? getPollutionLevelClass(cellValue)
@@ -83,12 +92,25 @@ export default function DataTable({ data }: DataTableProps) {
 
                     return (
                       <TableCell key={header}>
-                        <span className={cn(isPollutionColumn && 'px-2 py-1 rounded-md font-medium', pollutionClass)}>
+                        <span
+                          className={cn(
+                            isPollutionColumn &&
+                              "px-2 py-1 rounded-md font-medium",
+                            pollutionClass
+                          )}
+                        >
                           {isImputed ? (
                             <Tooltip>
                               <TooltipTrigger>
-                                <span className={cn("flex items-center gap-1.5", isPollutionColumn ? 'text-inherit' : 'text-accent bg-accent/20 px-2 py-1 rounded-md')}>
-                                  <Wand2 className="h-3 w-3"/> {cellValue}
+                                <span
+                                  className={cn(
+                                    "flex items-center gap-1.5",
+                                    isPollutionColumn
+                                      ? "text-inherit"
+                                      : "text-accent bg-accent/20 px-2 py-1 rounded-md"
+                                  )}
+                                >
+                                  <Wand2 className="h-3 w-3" /> {cellValue}
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent>

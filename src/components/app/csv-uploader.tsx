@@ -17,13 +17,17 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
+  /** Handle parsing and processing of uploaded file */
   const handleFile = (file: File) => {
     if (disabled) return;
+
     if (file && file.type === "text/csv") {
       setFileName(file.name);
+
       Papa.parse(file, {
         complete: (results) => {
           const data = results.data as CsvData;
+
           if (data.length === 0) {
             toast({
               variant: "destructive",
@@ -33,15 +37,15 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
             setFileName(null);
             return;
           }
-          
-          const lowercasedData = data.map(row => 
-            row.map(cell => 
-              typeof cell === 'string' ? cell.toLowerCase() : cell
+
+          // Normalize all string cells to lowercase
+          const lowercasedData = data.map((row) =>
+            row.map((cell) =>
+              typeof cell === "string" ? cell.toLowerCase() : cell
             )
           ) as CsvData;
 
           const headers = lowercasedData[0] as CsvHeader;
-
           onUpload(lowercasedData, headers);
         },
         error: (error) => {
@@ -63,18 +67,22 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
     }
   };
 
+  /** Handle file input change */
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       handleFile(e.target.files[0]);
     }
   };
 
-  const handleDragEnter = useCallback((e: DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (disabled) return;
-    setIsDragging(true);
-  }, [disabled]);
+  /** Drag & drop handlers */
+  const handleDragEnter = useCallback(
+    (e: DragEvent<HTMLLabelElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!disabled) setIsDragging(true);
+    },
+    [disabled]
+  );
 
   const handleDragLeave = useCallback((e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
@@ -102,14 +110,15 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
 
   return (
     <div className="flex flex-col items-center gap-4">
+      {/* Drag & Drop Area */}
       <label
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-colors ${
-          isDragging ? "border-primary bg-primary/10" : "border-border"
-        } ${disabled ? 'cursor-not-allowed bg-muted/50' : 'cursor-pointer'}`}
+        className={`w-full flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg transition-colors
+          ${isDragging ? "border-primary bg-primary/10" : "border-border"}
+          ${disabled ? "cursor-not-allowed bg-muted/50" : "cursor-pointer"}`}
       >
         <UploadCloud className="h-12 w-12 text-muted-foreground" />
         <p className="mt-4 text-center text-muted-foreground">
@@ -125,8 +134,18 @@ export default function CsvUploader({ onUpload, disabled }: CsvUploaderProps) {
           disabled={disabled}
         />
       </label>
-      {fileName && <p className="text-sm text-muted-foreground">File: {fileName}</p>}
-      <Button onClick={() => document.getElementById('csv-upload')?.click()} variant="outline" disabled={disabled}>
+
+      {/* Display uploaded file name */}
+      {fileName && (
+        <p className="text-sm text-muted-foreground">File: {fileName}</p>
+      )}
+
+      {/* Button to manually open file selector */}
+      <Button
+        onClick={() => document.getElementById("csv-upload")?.click()}
+        variant="outline"
+        disabled={disabled}
+      >
         Select File
       </Button>
     </div>

@@ -38,8 +38,10 @@ export default function Home() {
   } | null>(null);
   const [suggestedMapping, setSuggestedMapping] =
     useState<ColumnMapping | null>(null);
+
   const { toast } = useToast();
 
+  /** Handle CSV upload and suggest column mapping */
   const handleUpload = async (data: CsvData, headers: CsvHeader) => {
     setIsProcessing(true);
     setCsvData({ data, headers });
@@ -49,11 +51,11 @@ export default function Home() {
       setSuggestedMapping(mapping);
 
       if (!mapping.latitude || !mapping.longitude) {
-        // If mapping fails, go to manual mapping screen
+        // If mapping fails, go to manual mapping
         setStep("manual_map");
         setIsProcessing(false);
       } else {
-        // If found, proceed directly to analysis
+        // If mapping found, process data directly
         await processAndShowResults(data, mapping);
       }
     } catch (error) {
@@ -61,6 +63,7 @@ export default function Home() {
     }
   };
 
+  /** Process CSV data and display results */
   const processAndShowResults = async (
     data: CsvData,
     mapping: ColumnMapping
@@ -68,17 +71,11 @@ export default function Home() {
     setIsProcessing(true);
     setStep("results");
     try {
-      let result;
-      if (useAiImputation) {
-        result = await processDataWithAI(data, mapping);
-      } else {
-        result = await processDataWithoutAI(data, mapping);
-      }
+      const result = useAiImputation
+        ? await processDataWithAI(data, mapping)
+        : await processDataWithoutAI(data, mapping);
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
+      if (result.error) throw new Error(result.error);
       setProcessedData(result.data || []);
     } catch (error) {
       handleProcessingError(error);
@@ -87,6 +84,7 @@ export default function Home() {
     }
   };
 
+  /** Handle manual column mapping submission */
   const handleManualMap = async (manualMapping: {
     latitude: string;
     longitude: string;
@@ -97,6 +95,7 @@ export default function Home() {
     }
   };
 
+  /** Show error toast and reset state */
   const handleProcessingError = (error: unknown) => {
     console.error("Processing failed:", error);
     toast({
@@ -105,9 +104,10 @@ export default function Home() {
       description:
         error instanceof Error ? error.message : "An unknown error occurred.",
     });
-    handleReset(); // Go back to upload screen on error
+    handleReset();
   };
 
+  /** Reset application to initial state */
   const handleReset = () => {
     setStep("upload");
     setProcessedData(null);
@@ -116,6 +116,7 @@ export default function Home() {
     setSuggestedMapping(null);
   };
 
+  /** Render content based on current step */
   const renderStep = () => {
     switch (step) {
       case "upload":
@@ -128,9 +129,11 @@ export default function Home() {
               Upload your CSV data to calculate Heavy Metal Pollution Indices
               (HMPI) and visualize contamination risks on an interactive map.
             </p>
+
             <Card className="mt-12 max-w-2xl mx-auto bg-card/50 backdrop-blur-sm">
               <CardContent className="p-6 space-y-6">
                 <CsvUploader onUpload={handleUpload} disabled={isProcessing} />
+
                 <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50">
                   <div className="flex items-center gap-3 text-left">
                     <Wand2 className="h-6 w-6 text-primary" />
@@ -154,6 +157,7 @@ export default function Home() {
             </Card>
           </div>
         );
+
       case "manual_map":
         return (
           csvData && (
@@ -163,6 +167,7 @@ export default function Home() {
             />
           )
         );
+
       case "results":
         if (isProcessing) {
           return (
@@ -181,6 +186,7 @@ export default function Home() {
             <ResultsDisplay data={processedData} onReset={handleReset} />
           )
         );
+
       default:
         return null;
     }
@@ -196,6 +202,7 @@ export default function Home() {
           </Button>
         )}
       </header>
+
       <div className="w-full max-w-7xl flex-1 flex flex-col items-center justify-center">
         {renderStep()}
       </div>
